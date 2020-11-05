@@ -1,0 +1,161 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Helvetica, Palatino, Garamond, Arial;
+}
+
+span:hover {
+  cursor: pointer;
+  text-decoration: underline black solid;
+}
+
+.package-wrapper {
+  margin: 0% 10% 0% 10%;
+  border-left: 3px dashed black;
+  border-right: 3px dashed black;
+  padding: 10px 30px 0px 30px;
+}
+
+.package-list {
+  border: 3px solid black;
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 2%;
+  margin-bottom: 2%;
+  line-height: 1.4;
+  text-align: center;
+  display:flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.package-name {
+  font-size: 1.25em;
+  white-space: pre;
+  padding: 0px 8px 0px 8px;
+}
+
+#overlay {
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+#overlay-wrapper {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin: 10% 15% 5% 15%;
+  background-color: white;
+  border: 3px solid black;
+  border-radius: 25px;
+  padding: 8px;
+}
+
+.close-button {
+  border: 1px solid red;
+  align-self: flex-end;
+  font-size: 3em;
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  background-color: white;
+  border: 5px solid black;
+  height: 80px;
+  width: 80px;
+  text-align: center;
+  border-radius: 50%;
+  z-index: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.overlay {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.name {
+  font-size: 3em;
+  border-bottom: 2px dashed black;
+  text-align: center;
+  padding: 10px 20px 6px 20px;
+}
+
+.summary {
+  font-size: 1.8em;
+  text-align: center;
+  padding: 20px 20px 0px 20px;
+}
+
+.description {
+  font-size: 1.2em;
+  text-align: center;
+  padding: 20px 40px 20px 40px;
+  font-style: italic;
+}
+
+/* dependencies */
+.package-dependency-wrapper {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dependency-wrapper {
+  border-bottom: 1.5px solid black;
+  border-radius: 25px;
+  padding: 10px;
+}
+
+.package-dependency {
+  font-size: 1.2em;
+  padding: 5px 10px 5px 10px;
+}
+
+/* dependents */
+.package-dependents-wrapper {
+  padding: 20px;
+  flex-direction: column;
+}
+
+.title {
+  position: relative;
+  align-self: flex-start;
+  font-size: 1.2em;
+  top: -5px;
+  left: -5px;
+  border-bottom: 1px dotted black;
+}
+
+.dependent-wrapper {
+  border-bottom: 1.5px solid black;
+  border-radius: 25px;
+  padding: 10px;
+}
+
+.package-dependent {
+  font-size: 1.2em;
+  padding: 5px 10px 5px 10px;
+}
+
+.divider {
+  margin: -12px;
+  font-size: 1.6em;
+  font-weight: lighter;
+  color: red;
+}

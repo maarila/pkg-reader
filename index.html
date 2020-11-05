@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Debian Software Packages</title>
+    <link rel="stylesheet" type="text/css" href="app.css" />
+  </head>
+  <body>
+    <article id="overlay" onclick="hideOverlay(event, this);">
+      <section id="overlay-wrapper"></section>
+    </article>
+    <article id="wrapper" class="package-wrapper"></article>
+  </body>
+  <script>
+    /** Fetches name data from the back-end asynchronously */
+    const getAllPackageNames = async () => {
+      const response = await fetch('/names');
+      const data = await response.json();
+      return data.names.sort();
+    };
+
+    /** Fetches information for a single package asynchronously */
+    const getDetailsFor = async package => {
+      const response = await fetch(`/packages?name=${package}`);
+      const data = await response.json();
+      return data;
+    };
+
+    /**
+     * Creates a DOM element, assigns it a class name and gives it optional
+     *    text content. The main factory producing elements for the DOM
+     */
+    const create = (element, className, text) => {
+      const newElement = document.createElement(element);
+      newElement.className = className;
+      const textNode = document.createTextNode(text);
+      newElement.appendChild(textNode);
+      return newElement;
+    };
+
+    /** Adds a title name element to the given wrapper element */
+    const createNameElementFor = (wrapper, name) => {
+      const nameElement = create('section', 'overlay name', name);
+      wrapper.appendChild(nameElement);
+    };
+
+    /** Adds a summary element to the given wrapper element */
+    const createSummaryElementFor = (wrapper, summary) => {
+      const summaryElement = create('section', 'overlay summary', summary);
+      wrapper.appendChild(summaryElement);
+    };
+
+    /** Adds a description element to the given wrapper element */
+    const createDescriptionElementFor = (wrapper, description) => {
+      const descriptionElement = create(
+        'section',
+        'overlay description',
+        description
+      );
+      wrapper.appendChild(descriptionElement);
+    };
+
+    /** Creates a divider element represented by a pipe character */
+    const createDivider = className => {
+      return create('div', className, '|');
+    };
+
+    /** Adds all package dependencies to the given wrapper element */
+    createDependsElementFor = (wrapper, depends) => {
+      if (Object.keys(depends).length > 0) {
+        const dependencyWrapper = create(
+          'section',
+          'overlay package-dependency-wrapper',
+          ''
+        );
+
+        const dependentTitleElement = create('div', 'title', 'dependencies');
+        dependencyWrapper.appendChild(dependentTitleElement);
+
+        const deepWrapper = create('div', 'overlay dependency-wrapper', '');
+
+        depends.forEach(dependency => {
+          let dependencyElement = '';
+
+          if (dependency.name === '|') {
+            dependencyElement = createDivider(
+              'overlay package-dependency divider'
+            );
+          } else {
+            dependencyElement = create(
+              dependency.found ? 'span' : 'div',
+              'overlay package-dependency',
+              formatPackageName(dependency.name)
+            );
+            if (dependency.found) {
+              dependencyElement.onclick = () => showDetailsFor(dependency.name);
+            }
+          }
+
+          deepWrapper.appendChild(dependencyElement);
+        });
+
+        dependencyWrapper.appendChild(deepWrapper);
+        wrapper.appendChild(dependencyWrapper);
+      }
+    };
+
+    /** Adds all dependents (= reverse dependencies) to given wrapper element */
+    const createDependentsElementFor = (wrapper, dependents) => {
+      if (dependents.length > 0) {
+        const dependentWrapper = create(
+          'section',
+          'overlay package-dependents-wrapper',
+          ''
+        );
+
+        const titleElement = create('div', 'title', 'dependents');
+        dependentWrapper.appendChild(titleElement);
+
+        const packageWrapper = create('div', 'overlay dependent-wrapper', '');
+
+        dependents.sort().forEach(dependent => {
+          const dependentElement = create(
+            'span',
+            'overlay package-dependent',
+            formatPackageName(dependent)
+          );
+
+          if (dependent !== '|') {
+            dependentElement.onclick = () => showDetailsFor(dependent);
+          }
+          packageWrapper.appendChild(dependentElement);
+        });
+
+        dependentWrapper.appendChild(packageWrapper);
+        wrapper.appendChild(dependentWrapper);
+      }
+    };
+
+    /** Adds a button to hide the overlay element */
+    const createCloseButtonFor = wrapper => {
+      const closeButton = create('div', 'overlay close-button', 'X');
+      closeButton.id = 'closeButton';
+      closeButton.onclick = () => hideOverlay(event, this);
+      wrapper.appendChild(closeButton);
+    };
+
+    /**
+     * Main function that creates an overlay element displaying detailed
+     *    information regarding the selected software package. The overlay is
+     *    created with various helper functions
+     */
+    const showDetailsFor = async package => {
+      const wrapper = document.getElementById('overlay-wrapper');
+      [...wrapper.childNodes].forEach(child => child.remove());
+
+      const details = await getDetailsFor(package);
+
+      createCloseButtonFor(wrapper);
+      createNameElementFor(wrapper, package);
+      createSummaryElementFor(wrapper, details.summary);
+      createDescriptionElementFor(wrapper, details.description);
+      createDependsElementFor(wrapper, details.depends);
+      createDependentsElementFor(wrapper, details.dependents);
+
+      document.getElementById('overlay').style.display = 'block';
+    };
+
+    /** Function to hide overlay */
+    const hideOverlay = (event, element) => {
+      if (isClicked(event, element)) {
+        document.getElementById('overlay').style.display = 'none';
+      }
+    };
+
+    /** Confirms that the clicked element is the proper element for closure */
+    const isClicked = (event, element) => {
+      if (event.target.id === element.id || event.target.id === 'closeButton') {
+        return true;
+      }
+      return false;
+    };
+
+    /** Formats the name for display purposes */
+    const formatPackageName = name => {
+      return '[ ' + name + ' ]';
+    };
+
+    /** Adds a name element to the given wrapper element */
+    const createPackageNameElementFor = (element, name) => {
+      const nameElement = create(
+        'span',
+        'package-name',
+        formatPackageName(name)
+      );
+      nameElement.onclick = () => showDetailsFor(name);
+      element.appendChild(nameElement);
+    };
+
+    /**
+     * Fetches the complete name list from the back-end and then alphabetizes
+     *    the list into a Map data structure. The Map is used to create a unique
+     *    section for each of the letters thus separating alphabets from each
+     *    other. The values in the Map are turned into elements of their own
+     */
+    const createPackageList = async () => {
+      const alphabetized = new Map();
+      const names = await getAllPackageNames();
+
+      names.forEach(name => {
+        const firstLetter = name.charAt(0);
+        if (!alphabetized.has(firstLetter)) {
+          alphabetized.set(firstLetter, []);
+        }
+        alphabetized.set(
+          firstLetter,
+          alphabetized.get(firstLetter).concat(name)
+        );
+      });
+
+      for (const key of alphabetized.keys()) {
+        const alphabetElement = document.createElement('section');
+        alphabetElement.className = 'package-list';
+        alphabetElement.id = key;
+
+        const packages = alphabetized.get(key);
+
+        packages.forEach(name => {
+          createPackageNameElementFor(alphabetElement, name);
+        });
+
+        document.getElementById('wrapper').appendChild(alphabetElement);
+      }
+    };
+
+    /** Starts the dynamic manipulation of the DOM and creates the first view */
+    createPackageList();
+  </script>
+</html>
