@@ -5,7 +5,7 @@ Files included:
 1. app.js - main software logic, back-end functionality
 2. index.html - data presentation / DOM manipulation, parses data dynamically for the front-end
 3. app.css - style definitions
-4. README.txt - this file
+4. README.md - this file
 
 Requirements:
 
